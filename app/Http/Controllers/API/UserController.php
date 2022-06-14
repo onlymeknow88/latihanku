@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\TokenFirebase;
 use App\Helpers\ResponseFormatter;
 use Laravel\Fortify\Rules\Password;
 use App\Http\Controllers\Controller;
@@ -86,12 +87,18 @@ class UserController extends Controller
 
             $user = User::where('email', $request->email)->first();
 
+            $tokenFirebase = TokenFirebase::create([
+                'token' => $request->token_firebase,
+                'users_id' => $user->id
+            ]);
+
             $tokenResult = $user->createToken('authToken')->plainTextToken;
 
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $user
+                'user' => $user,
+                'token_firebase' => $tokenFirebase
             ],'User Registered');
         } catch (Exception $error) {
             return ResponseFormatter::error([
@@ -139,5 +146,18 @@ class UserController extends Controller
             'user' => $user
         ],'Authenticated');
     }
+
+    // public function saveToken(Request $request)
+    // {
+    //     $data = $request->all();
+
+    //     $user = TokenFirebase::create($data);
+    //     return ResponseFormatter::success($user,'Token Saved');
+    // }
+
+    // public function getToken(Request $request){
+    //     $user = User::with(['tokenFirebase'])->where('email',$request->email)->first();
+    //     return ResponseFormatter::success(['user' => $user],'Token Fetched');
+    // }
 
 }

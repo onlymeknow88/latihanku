@@ -40,6 +40,10 @@ class User extends Authenticatable
         return config('app_url') . Storage::url($url);
     }
 
+    public function tokenFirebase() {
+        return $this->hasMany(TokenFirebase::class, 'users_id', 'id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
