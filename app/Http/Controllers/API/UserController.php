@@ -60,9 +60,7 @@ class UserController extends Controller
     public function logout(Request $request)
     {
 
-        $id = $request->id;
-        $user = User::find($id);
-        
+
 
         $token = $request->user()->currentAccessToken()->delete();
 

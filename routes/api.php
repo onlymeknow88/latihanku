@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProductCategoryController;
+use App\Http\Controllers\API\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,13 @@ Route::post('del-products', [ProductController::class, 'deleteProduct']);
 
 Route::get('get-category', [ProductCategoryController::class, 'getCategory']);
 Route::post('add-category', [ProductCategoryController::class, 'addCategory']);
+
+
+Route::post('add-employee', [EmployeeController::class, 'addEmployee']);
+Route::get('get-employee', [EmployeeController::class, 'getEmployee']);
+Route::put('edit-employee', [EmployeeController::class, 'editEmployee']);
+
+
 
 Route::get('token', [UserController::class, 'getUserById']);
 Route::post('login', [UserController::class, 'login']);
