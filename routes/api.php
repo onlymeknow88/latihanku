@@ -35,5 +35,6 @@ Route::post('del-products', [ProductController::class, 'deleteProduct']);
 Route::get('get-category', [ProductCategoryController::class, 'getCategory']);
 Route::post('add-category', [ProductCategoryController::class, 'addCategory']);
 
+Route::get('token', [UserController::class, 'getUserById']);
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'register']);

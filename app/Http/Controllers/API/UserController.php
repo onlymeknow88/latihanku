@@ -60,6 +60,10 @@ class UserController extends Controller
     public function logout(Request $request)
     {
 
+        $id = $request->id;
+        $user = User::find($id);
+        
+
         $token = $request->user()->currentAccessToken()->delete();
 
 
@@ -145,6 +149,11 @@ class UserController extends Controller
         return ResponseFormatter::success([
             'user' => $user
         ],'Authenticated');
+    }
+
+    public function getUserById(Request $request) {
+        $user = User::with(['tokenFirebase'])->where('email', $request->email)->where('roles',$request->roles)->first();
+        return ResponseFormatter::success($user,'User Found');
     }
 
     // public function saveToken(Request $request)
