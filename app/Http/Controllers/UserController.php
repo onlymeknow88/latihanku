@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use Exception;
 use App\Models\User;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use App\Helpers\ResponseFormatter;
 use Laravel\Fortify\Rules\Password;
@@ -99,6 +100,8 @@ class UserController extends Controller
 
     }
 
+
+
     public function updateProfile(Request $request)
     {
         $data = $request->all();
@@ -123,4 +126,6 @@ class UserController extends Controller
             404
         );
     }
+
+
 }

@@ -43,6 +43,10 @@ Route::put('edit-employee', [EmployeeController::class, 'editEmployee']);
 
 
 
+Route::post('login-permit', [EmployeeController::class, 'permitLogin']);
+
 Route::get('token', [UserController::class, 'getUserById']);
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'register']);
+
+

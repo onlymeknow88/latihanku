@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use Exception;
+use App\Models\User;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use App\Models\EmployeeGallery;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
@@ -29,7 +32,7 @@ class EmployeeController extends Controller
         }
 
         return ResponseFormatter::success([
-            'employee'=>$employee,
+            'employee'=> $employee,
             'galleries' => $gallery
         ], 'Data employee berhasil ditambahkan');
     }
@@ -70,5 +73,31 @@ class EmployeeController extends Controller
             'galleries' => $cek_image
         ], 'Data employee berhasil diubah');
 
+    }
+
+    public function permitLogin(Request $request)
+    {
+        try {
+
+            $permit_id = $request->permit_id;
+            $employee = Employee::where('permit_id',$permit_id)->first();
+
+            $user = User::where('email', $employee->email)->first();
+            if ( ! Hash::check($request->password, $user->password, [])) {
+                throw new \Exception('Invalid Credentials');
+            }
+
+            $tokenResult = $user->createToken('authToken')->plainTextToken;
+            return ResponseFormatter::success([
+                'access_token' => $tokenResult,
+                'token_type' => 'Bearer',
+                'user' => $user
+            ],'Authenticated');
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error,
+            ],'Authentication Failed', 500);
+        }
     }
 }
