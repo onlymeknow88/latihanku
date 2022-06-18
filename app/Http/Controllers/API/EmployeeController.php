@@ -9,11 +9,17 @@ use Illuminate\Http\Request;
 use App\Models\EmployeeGallery;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
+
+    public function getAllEmployee()
+    {
+        $employee = Employee::with(['galleries'])->get();
+        return ResponseFormatter::success($employee, 'Data Employee berhasil diambil');
+    }
+
     public function addEmployee(Request $request)
     {
         $data = $request->except('image');
@@ -41,6 +47,17 @@ class EmployeeController extends Controller
     {
         $id = $request->id;
         $employee = Employee::with(['galleries'])->find($id);
+
+        return ResponseFormatter::success(
+           $employee
+        , 'Data employee berhasil ditampilkan');
+    }
+
+
+    public function getEmployeeByPermit(Request $request)
+    {
+        $permit_id = $request->permit_id;
+        $employee = Employee::with(['galleries'])->where('permit_id',$permit_id)->first();
 
         return ResponseFormatter::success(
            $employee
@@ -78,14 +95,10 @@ class EmployeeController extends Controller
     public function permitLogin(Request $request)
     {
         try {
-
             $permit_id = $request->permit_id;
             $employee = Employee::where('permit_id',$permit_id)->first();
 
             $user = User::where('email', $employee->email)->first();
-            if ( ! Hash::check($request->password, $user->password, [])) {
-                throw new \Exception('Invalid Credentials');
-            }
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             return ResponseFormatter::success([
