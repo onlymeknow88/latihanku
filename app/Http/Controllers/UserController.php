@@ -6,11 +6,13 @@ use Exception;
 use App\Models\User;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Mail\OTPVerification;
 use App\Helpers\ResponseFormatter;
 use Laravel\Fortify\Rules\Password;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -66,30 +68,43 @@ class UserController extends Controller
     public function register(Request $request)
     {
         try {
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'username' => ['required', 'string', 'max:255', 'unique:users'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                // 'phone' => ['required', 'string', 'max:255'],
-                'password' => ['required', 'string', new Password]
-            ]);
+            // $request->validate([
+            //     'name' => ['required', 'string', 'max:255'],
+            //     'username' => ['required', 'string', 'max:255', 'unique:users'],
+            //     'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            //     // 'phone' => ['required', 'string', 'max:255'],
+            //     'password' => ['required', 'string', new Password]
+            // ]);
 
-            User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'username' => $request->username,
-                // 'phone' => $request->phone,
-                'password' => Hash::make($request->password),
-            ]);
+            // $verification_code  = substr(md5(uniqid(rand(), true)), 0, 6);
 
-            $user = User::where('email', $request->email)->first();
+            // User::create([
+            //     'name' => $request->name,
+            //     'email' => $request->email,
+            //     'username' => $request->username,
+            //     // 'phone' => $request->phone,
+            //     'password' => Hash::make($request->password),
 
-            $tokenResult = $user->createToken('authToken')->plainTextToken;
+            // ]);
+
+            // $user = User::where('email', $request->email)->first();
+            // // $user->update([
+            // //     'verification_code' => $verification_code
+            // // ]);
+
+            // $tokenResult = $user->createToken('authToken')->plainTextToken;
+
+            // $verification = [
+            //     'email' => $request->email,
+            //     'otp' => $verification_code
+            // ];
+
+            // Mail::to($request->email)->send(new OTPVerification($verification));
 
             return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
-                'user' => $user
+                // 'access_token' => $tokenResult,
+                // 'token_type' => 'Bearer',
+                'user' => $request->all()
             ],'User Registered');
         } catch (Exception $error) {
             return ResponseFormatter::error([
@@ -126,6 +141,8 @@ class UserController extends Controller
             404
         );
     }
+
+
 
 
 }

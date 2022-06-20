@@ -5,12 +5,14 @@ namespace App\Http\Controllers\API;
 use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Mail\OTPVerification;
 use App\Models\TokenFirebase;
 use App\Helpers\ResponseFormatter;
 use Laravel\Fortify\Rules\Password;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -38,10 +40,28 @@ class UserController extends Controller
                 ],'Authentication Failed', 500);
             }
 
+            $verification_code  = substr(md5(uniqid(rand(), true)), 0, 6);
+
             $user = User::where('email', $request->email)->first();
+            $user->update([
+                'verification_code' => $verification_code
+            ]);
+
             if ( ! Hash::check($request->password, $user->password, [])) {
                 throw new \Exception('Invalid Credentials');
             }
+
+            $mail  = ResponseFormatter::email();
+
+            $mail->addAddress($request->email);
+            $mail->Subject = 'Verification Code';
+            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
+            $body = ResponseFormatter::strReplace(
+                $body, $request->email,  $verification_code
+            );
+
+            $mail->MsgHTML($body);
+            $mail->send();
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             return ResponseFormatter::success([
@@ -60,7 +80,12 @@ class UserController extends Controller
     public function logout(Request $request)
     {
 
+        $user = User::find($request->user()->id);
 
+        $user->update([
+            'verification_code' => false,
+            'verified' => false
+        ]);
 
         $token = $request->user()->currentAccessToken()->delete();
 
@@ -81,9 +106,11 @@ class UserController extends Controller
 
 
             $data = $request->all();
+            $data['verification_code']  = substr(md5(uniqid(rand(), true)), 0, 6);
             $data['password'] = Hash::make($data['password']);
             $data['url'] = $request->file('image')->store('public/profile');
             $data['profile_photo_path'] = $request->file('image')->store('public/profile');
+            $data['verified'] = false;
 
             User::create($data);
 
@@ -95,6 +122,18 @@ class UserController extends Controller
             ]);
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
+
+            $mail  = ResponseFormatter::email();
+
+            $mail->addAddress($request->email);
+            $mail->Subject = 'Verification Code';
+            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
+            $body = ResponseFormatter::strReplace(
+                $body, $request->email,  $data['verification_code']
+            );
+
+            $mail->MsgHTML($body);
+            $mail->send();
 
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
@@ -108,6 +147,27 @@ class UserController extends Controller
                 'error' => $error,
             ],'Authentication Failed', 500);
         }
+
+    }
+
+    public function verificationLogin(Request $request) {
+        $verification_code = $request->verification_code;
+
+        $user = User::where('verification_code', $verification_code)->first();
+        if ( ! $user) {
+            return ResponseFormatter::error([
+                'message' => 'Verification Code Not Found'
+            ],'Verification Code Not Found', 404);
+        }
+
+        $user->update([
+            'verification_code' => false,
+            'verified' => true
+        ]);
+
+        return ResponseFormatter::success([
+            'user' => $user,
+        ],'Verified');
 
     }
 
@@ -166,5 +226,64 @@ class UserController extends Controller
     //     $user = User::with(['tokenFirebase'])->where('email',$request->email)->first();
     //     return ResponseFormatter::success(['user' => $user],'Token Fetched');
     // }
+
+    public function otpRegister(Request $request)
+    {
+        $data['verification_code']  = substr(md5(uniqid(rand(), true)), 0, 6);
+
+        $mail  = ResponseFormatter::email();
+
+            $mail->addAddress($request->email);
+            $mail->Subject = 'Verification Code';
+            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
+            $body = ResponseFormatter::strReplace(
+                $body, $request->email,  $data['verification_code']
+            );
+
+            $mail->MsgHTML($body);
+            $mail->send();
+
+
+
+    }
+
+    public function loginEmployee(Request $request) {
+        try {
+            $request->validate([
+                'email' => 'email|required',
+            ]);
+
+            $verification_code  = substr(md5(uniqid(rand(), true)), 0, 6);
+
+            $user = User::where('email', $request->email)->first();
+            $user->update([
+                'verification_code' => $verification_code
+            ]);
+
+            $mail  = ResponseFormatter::email();
+
+            $mail->addAddress($request->email);
+            $mail->Subject = 'Verification Code';
+            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
+            $body = ResponseFormatter::strReplace(
+                $body, $request->email,  $verification_code
+            );
+
+            $mail->MsgHTML($body);
+            $mail->send();
+
+            $tokenResult = $user->createToken('authToken')->plainTextToken;
+            return ResponseFormatter::success([
+                'access_token' => $tokenResult,
+                'token_type' => 'Bearer',
+                'user' => $user
+            ],'Authenticated');
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error,
+            ],'Authentication Failed', 500);
+        }
+    }
 
 }

@@ -28,6 +28,8 @@ class User extends Authenticatable
         'name',
         'email',
         'username',
+        'verification_code',
+        'verified',
         'phone',
         'roles',
         'password',

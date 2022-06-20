@@ -21,6 +21,7 @@ use App\Http\Controllers\API\EmployeeController;
 Route::middleware(['auth:sanctum'])->group(function () {
     //user
     Route::put('update-photo', [UserController::class, 'updatePhoto']);
+    Route::get('verified', [UserController::class, 'verificationLogin']);
     Route::get('user', [UserController::class, 'fetch']);
     Route::put('user', [UserController::class, 'updateProfile']);
     Route::post('logout', [UserController::class, 'logout']);
@@ -49,6 +50,8 @@ Route::put('edit-employee', [EmployeeController::class, 'editEmployee']);
 Route::post('login-permit', [EmployeeController::class, 'permitLogin']);
 Route::get('token', [UserController::class, 'getUserById']);
 Route::post('login', [UserController::class, 'login']);
+Route::post('login-employee', [UserController::class, 'loginEmployee']);
 Route::post('register', [UserController::class, 'register']);
+Route::post('registerOTP', [UserController::class, 'otpRegister']);
 
 

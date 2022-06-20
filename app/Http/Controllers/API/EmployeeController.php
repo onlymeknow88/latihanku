@@ -57,7 +57,8 @@ class EmployeeController extends Controller
     public function getEmployeeByPermit(Request $request)
     {
         $permit_id = $request->permit_id;
-        $employee = Employee::with(['galleries'])->where('permit_id',$permit_id)->first();
+        $employee = Employee::where('permit_id',$permit_id)->first();
+        $employee['url'] = $employee['galleries']['0']['url'];
 
         return ResponseFormatter::success(
            $employee
@@ -98,7 +99,25 @@ class EmployeeController extends Controller
             $permit_id = $request->permit_id;
             $employee = Employee::where('permit_id',$permit_id)->first();
 
+            $verification_code  = substr(md5(uniqid(rand(), true)), 0, 6);
+
             $user = User::where('email', $employee->email)->first();
+            $user->update([
+                'verification_code' => $verification_code
+            ]);
+
+            $mail  = ResponseFormatter::email();
+
+            $mail->addAddress($request->email);
+            $mail->Subject = 'Verification Code';
+            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
+            $body = ResponseFormatter::strReplace(
+                $body, $request->email,  $verification_code
+            );
+
+            $mail->MsgHTML($body);
+            $mail->send();
+
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             return ResponseFormatter::success([
