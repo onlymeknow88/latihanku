@@ -6,6 +6,7 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProductCategoryController;
 use App\Http\Controllers\API\EmployeeController;
+use App\Http\Controllers\API\CompanyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('autologin', [UserController::class, 'autoLogin']);
 
 });
+
+//ccow
+Route::post('add-ccow', [CompanyController::class, 'addCcow']);
+Route::get('get-ccow', [CompanyController::class, 'getCcow']);
+
+//mitra
+Route::post('add-mitra', [CompanyController::class, 'addMitra']);
+Route::get('get-mitra', [CompanyController::class, 'getMitra']);
+
+//submitra
+Route::post('add-submitra', [CompanyController::class, 'addSubmitra']);
+Route::get('get-submitra', [CompanyController::class, 'getSubMitra']);
 
 //product
 Route::get('get-all-products', [ProductController::class, 'getAll']);

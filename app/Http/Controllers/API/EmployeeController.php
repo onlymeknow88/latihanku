@@ -118,7 +118,6 @@ class EmployeeController extends Controller
             $mail->MsgHTML($body);
             $mail->send();
 
-
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,

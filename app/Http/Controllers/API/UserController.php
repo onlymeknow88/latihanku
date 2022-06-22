@@ -227,25 +227,6 @@ class UserController extends Controller
     //     return ResponseFormatter::success(['user' => $user],'Token Fetched');
     // }
 
-    public function otpRegister(Request $request)
-    {
-        $data['verification_code']  = substr(md5(uniqid(rand(), true)), 0, 6);
-
-        $mail  = ResponseFormatter::email();
-
-            $mail->addAddress($request->email);
-            $mail->Subject = 'Verification Code';
-            $body = file_get_contents(resource_path('views/emails/verification.blade.php'));
-            $body = ResponseFormatter::strReplace(
-                $body, $request->email,  $data['verification_code']
-            );
-
-            $mail->MsgHTML($body);
-            $mail->send();
-
-
-
-    }
 
     public function loginEmployee(Request $request) {
         try {
